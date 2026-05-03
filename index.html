@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#FBF6EC" />
+  <meta name="description" content="Master the Thai alphabet — interactive lessons by Om for italki students and language learners." />
+  <title>Master Thai — Learn the Thai Alphabet with Om</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <button class="brand" data-action="go-home" type="button" aria-label="Go to home">
+        <span class="brand-mark" aria-hidden="true">ก</span>
+        <span class="brand-text">
+          <span class="brand-name">Master Thai</span>
+          <span class="brand-tag">เรียนภาษาไทยกับครูโอม</span>
+        </span>
+      </button>
+      <button class="about-btn" data-action="open-about" type="button" aria-label="About this site">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>About</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="app" role="main"></main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-mark" aria-hidden="true">◆</span>
+      <span>Crafted with care for Thai language learners</span>
+      <span class="footer-mark" aria-hidden="true">◆</span>
+    </div>
+  </footer>
+
+  <!-- About modal -->
+  <div id="about-modal" class="modal-backdrop" role="presentation" data-action="close-about">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title" onclick="event.stopPropagation()">
+      <button class="modal-close" data-action="close-about" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-eyebrow">
+        <span class="diamond" aria-hidden="true">◆</span>
+        <span>About the Teacher</span>
+        <span class="diamond" aria-hidden="true">◆</span>
+      </div>
+
+      <h2 id="about-title">สวัสดีครับ! I'm Om</h2>
+
+      <p>
+        Here is a brief about me. I'm currently a teacher on the language learning platform
+        <strong>italki</strong>. When I'm not in a 1-on-1 session, I'm creating bite-sized
+        Thai lessons for my community on Instagram and TikTok.
+      </p>
+
+      <div class="modal-section">
+        <h3>Connect With Me</h3>
+
+        <div class="modal-link-row">
+          <div class="modal-link-item">
+            <span class="label">Book a Lesson</span>
+            <a href="https://www.italki.com/en/teacher/16591055" target="_blank" rel="noopener noreferrer">
+              View my italki Profile →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">New to italki?</span>
+            <a href="https://www.italki.com/en/i/ref/fdBGcf?hl=en&utm_medium=user_referral&utm_source=copylink_share" target="_blank" rel="noopener noreferrer">
+              Register here for a discount →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">Instagram</span>
+            <a href="https://www.instagram.com/amanvslang/" target="_blank" rel="noopener noreferrer">
+              @amanvslang →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">TikTok</span>
+            <a href="https://www.tiktok.com/@paskornlar" target="_blank" rel="noopener noreferrer">
+              @paskornlar →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">YouTube</span>
+            <span style="color: var(--text-muted); font-style: italic;">soon!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
