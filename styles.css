@@ -97,7 +97,8 @@ img, svg { display: block; max-width: 100%; }
 /* ---------- Base ---------- */
 html { -webkit-text-size-adjust: 100%; }
 body {
-  font-family: 'Sarabun', system-ui, -apple-system, sans-serif;
+  font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi',
+               'Tahoma', system-ui, -apple-system, sans-serif;
   font-weight: 400;
   font-size: 16px;
   line-height: 1.55;
@@ -1096,11 +1097,16 @@ body::before {
    ============================================================ */
 
 /* Font swap ---------------------------------------------------- */
+/* Both stacks include strong Thai fallbacks so combining marks (mai-han-akat,
+   sara-i, etc.) and the dotted-circle placeholder always have a covering glyph
+   on every device, including older Android webviews and in-app browsers. */
 body.font-sarabun {
-  font-family: 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi',
+               'Tahoma', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 body.font-noto {
-  font-family: 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Noto Sans Thai', 'Sarabun', 'Leelawadee UI', 'Thonburi',
+               'Tahoma', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 body.font-noto .brand-mark,
 body.font-noto .thai-letter-display,
@@ -1108,7 +1114,8 @@ body.font-noto .hero-watermark,
 body.font-noto .card-thai,
 body.font-noto .brand-tag,
 body.font-noto .page-thai {
-  font-family: 'Noto Sans Thai', system-ui, sans-serif;
+  font-family: 'Noto Sans Thai', 'Sarabun', 'Leelawadee UI', 'Thonburi',
+               'Tahoma', system-ui, sans-serif;
 }
 
 /* Header actions / timer toggle -------------------------------- */
@@ -1289,10 +1296,10 @@ body.quiz-active .timer-toggle {
   letter-spacing: 0.04em;
 }
 .font-option[data-font="sarabun"] .font-option-preview {
-  font-family: 'Sarabun', system-ui, sans-serif;
+  font-family: 'Sarabun', 'Noto Sans Thai', 'Tahoma', system-ui, sans-serif;
 }
 .font-option[data-font="noto"] .font-option-preview {
-  font-family: 'Noto Sans Thai', system-ui, sans-serif;
+  font-family: 'Noto Sans Thai', 'Sarabun', 'Tahoma', system-ui, sans-serif;
 }
 @media (max-width: 560px) {
   .font-options { grid-template-columns: 1fr; }
@@ -1790,11 +1797,11 @@ body.quiz-active .timer-toggle {
   font-size: 16px;
   font-weight: 500;
   color: var(--text-muted);
-  font-family: 'Sarabun', sans-serif;
+  font-family: 'Sarabun', 'Noto Sans Thai', 'Tahoma', system-ui, sans-serif;
   text-align: center;
 }
 body.font-noto .choice.choice-audio-only .reveal-name {
-  font-family: 'Noto Sans Thai', sans-serif;
+  font-family: 'Noto Sans Thai', 'Sarabun', 'Tahoma', system-ui, sans-serif;
 }
 .choice.choice-audio-only.locked .reveal-name {
   display: block;

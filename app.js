@@ -268,26 +268,12 @@ function buildFixedRound(modeId, categoryId, count) {
 }
 
 function buildAllRound(modeId, categoryId) {
-  // For mode "see" or "listen", iterate by unique audio (since multiple letters share audio).
-  // For "description", iterate by unique description. For "listen-letters" we walk the pool entries.
+  // "All" mode: every entry in the pool gets exactly one turn as the correct answer,
+  // in random order, with no skips and no duplicates of the same entry. Entries that
+  // share the same audio (e.g. ค/ฅ/ฆ) or description still each get their own question —
+  // the user's expectation is the literal CSV row count, not a deduplicated subset.
   const pool = getEntriesForCategory(categoryId);
-  let correctEntries;
-  if (modeId === 'listen' || modeId === 'see') {
-    const seen = new Set();
-    correctEntries = [];
-    for (const e of pool) {
-      if (!seen.has(e.audio)) { seen.add(e.audio); correctEntries.push(e); }
-    }
-  } else if (modeId === 'description') {
-    const seen = new Set();
-    correctEntries = [];
-    for (const e of pool) {
-      if (!seen.has(e.description)) { seen.add(e.description); correctEntries.push(e); }
-    }
-  } else {
-    correctEntries = pool.slice();
-  }
-  const order = shuffle(correctEntries);
+  const order = shuffle(pool.slice());
   return order.map(c => buildQuestionFromCorrect(modeId, pool, c));
 }
 
