@@ -1,133 +1,156 @@
-# Master Thai — Thai Alphabet Learning Web App
+# Thai Letter Master  (v1.1)
 
-A clean, modern, mobile-friendly site for helping students memorize the Thai alphabet through interactive quizzes. Built as a static site so it can be hosted directly on **GitHub Pages** with no build step.
+A friendly drill app for memorising the Thai alphabet — built for Om's italki students.
+Three practice modes (Listen / See / Match Description) covering 83 consonants and vowels,
+with adjustable session length, persistent progress, a stopwatch, and a font picker.
 
----
-
-## ✨ What's inside
-
-**Topic 1 — Master the Thai Alphabet** has three quiz modes:
-
-1. **Listen and Choose** — hear an audio cue, pick the correct Thai letter.
-2. **See the Letter and Choose the Sound** — see a Thai letter, pick the correct romanized sound name (with a "preview" button to listen before answering).
-3. **Match the Letter With Its Description** — read the letter's meaning, pick the correct Thai letter.
-
-Each mode is split into categories (Middle / High / Low pair / Low single consonants, Vowels, and mixed sets). Each round is **10 questions**, followed by a results screen.
+Static, single-page, no build step. Drop the folder onto GitHub Pages (or any static host) and go.
 
 ---
 
-## 📁 Required folder structure
-
-After cloning/uploading this repo, your folder should look like this:
+## Folder layout
 
 ```
-your-repo/
-├── index.html
-├── styles.css
-├── data.js
-├── app.js
-├── README.md
-├── Sarabun/        ← you add this
-│   ├── Sarabun-Light.ttf
-│   ├── Sarabun-Regular.ttf
-│   ├── Sarabun-Medium.ttf
-│   ├── Sarabun-SemiBold.ttf
-│   ├── Sarabun-Bold.ttf
-│   └── Sarabun-ExtraBold.ttf
-└── Sound/          ← you add this
-    ├── ก ไก่.mp3
-    ├── ข ไข่.mp3
-    ├── ...
-    └── (one file per row in the CSV, named exactly per Column C)
+thai-app/
+├── index.html        ← entry point
+├── styles.css        ← all visual styling
+├── app.js            ← state machine + render loop
+├── data.js           ← the 83-letter dataset
+├── README.md         ← this file
+├── Sound/            ← YOUR audio files go here  (you provide)
+└── Sarabun/          ← YOUR Sarabun font files   (you provide)
 ```
 
-### `Sarabun/` folder
+You provide two folders the app expects to find next to `index.html`:
 
-Download the [Sarabun font from Google Fonts](https://fonts.google.com/specimen/Sarabun) and place the `.ttf` files inside `Sarabun/` at the project root. The CSS expects these exact filenames (Google's default naming):
+- **`Sound/`** — one `.mp3` per audio name in `data.js`
+  (e.g. `ก.mp3`, `ค_ค_ฅ_ฆ.mp3`, `สระ-อะ.mp3`, ...).
+  Filenames must match the `audio` field of each entry exactly. If a file is
+  missing, the app shows a small toast — it will never crash.
 
-- `Sarabun-Light.ttf` (300)
-- `Sarabun-Regular.ttf` (400)
-- `Sarabun-Medium.ttf` (500)
-- `Sarabun-SemiBold.ttf` (600)
-- `Sarabun-Bold.ttf` (700)
-- `Sarabun-ExtraBold.ttf` (800)
+- **`Sarabun/`** — the standard-font option. The app loads it via
+  `@font-face` from this folder.
 
-If your files are named differently, update the `@font-face` block at the top of `styles.css`.
+The **modern font** option (Noto Sans Thai) is loaded from Google Fonts at
+runtime — no local files required.
 
-### `Sound/` folder
+---
 
-Place one audio file per CSV row inside `Sound/`. The filename must exactly match **Column C** of the CSV plus the `.mp3` extension. For example, the row for `ก` has `ก ไก่` in Column C, so the file should be `Sound/ก ไก่.mp3`.
+## Running locally
 
-**Default extension is `.mp3`.** To use a different format (e.g. `.m4a`, `.wav`), edit a single line near the top of `app.js`:
+Just open `index.html` in a browser. Audio playback may need a real HTTP
+server in some browsers (Chromium blocks `file://` audio). The simplest:
+
+```
+python3 -m http.server 8000
+# then visit http://localhost:8000/
+```
+
+## Deploying to GitHub Pages
+
+1. Commit the whole folder to a repo.
+2. In the repo's **Settings → Pages**, choose the branch and `/` (root).
+3. Done — your site is at `https://<user>.github.io/<repo>/`.
+
+The `Sound/` and `Sarabun/` folders just need to be in the same folder as
+`index.html`. Make sure they aren't gitignored.
+
+---
+
+## What's in v1.1
+
+### Bug fixes
+- The About-modal **close button** now reliably closes the dialog.
+- "See the Letter, Choose the Sound" mode no longer reveals the answer —
+  the four choices are anonymous play buttons until you commit.
+- The spurious "Couldn't load audio" toast that appeared when answering or
+  replaying quickly is gone (race-safe abort handling).
+
+### New features
+- **Session length picker**. After choosing a category, pick how many
+  questions you want: `5`, `10`, `15`, `20`, **All** (every letter once,
+  no repeats — gold animated button), `Custom` (1–99 with `−` / `+`), or
+  **Endless** (random forever, with an "End Session" button).
+- **Stopwatch** in the top-right of the header, only visible during a
+  quiz. Click to toggle on/off. Auto-pauses when the tab is hidden.
+- **Restart button** in every quiz toolbar — start the same session over
+  with a fresh shuffle.
+- **Auto-save / resume**. Closing or reloading mid-quiz preserves your
+  progress; you'll land back on the same question on return.
+- **Font picker on the home page** — choose between Sarabun (traditional,
+  good for beginners) and Noto Sans Thai (modern shop / signage style).
+  Selection persists across sessions.
+- **Obsolete letters** in the CSV (entries containing "(Obsolete)") are
+  highlighted in red wherever they appear.
+- New logo "อ" and updated header text *Thai Letter Master · เรียนภาษาไทย
+  กับนาย "ออม"*.
+
+### How "All" mode works
+Each unique question (one per letter or one per audio group, depending
+on mode) is asked exactly once in a randomised order. When the queue
+runs out, you go straight to the results screen.
+
+### How "Endless" mode works
+Random questions are generated indefinitely. The progress bar fills in
+loops of 10 just to give a sense of motion. Click **End Session** in the
+quiz toolbar to jump to results with whatever score you have.
+
+---
+
+## Modes & categories
+
+| Mode                    | What you see                       | What you pick           |
+|-------------------------|------------------------------------|-------------------------|
+| Listen & Choose         | a sound (auto-plays, replayable)   | the matching letter     |
+| See the Letter, Choose the Sound | a Thai letter             | the matching sound (anonymous play buttons) |
+| Match the Description   | an English description             | the matching letter     |
+
+Categories for **Listen** and **See** modes:
+Middle, High, Low-Pair, Low-Single, Mixed-3-Consonant-Groups, Vowels,
+and Mixed-Consonants-+-Vowels.
+
+Categories for **Description** mode:
+Mixed-3-Consonant-Groups, Vowels, Mixed-Consonants-+-Vowels.
+
+---
+
+## Data file (`data.js`)
+
+A single global `ALPHABET_DATA` array of 83 entries. Each entry:
 
 ```js
-const AUDIO_EXTENSION = '.mp3';
+{
+  letter:      'ก',                 // what's drawn on screen
+  audio:       'ก',                 // matches Sound/ก.mp3
+  description: 'Middle class sounds like ~ goat, gum',
+  group:       'middle',            // middle | high | lowPair | lowSingle | vowels
+}
 ```
 
-> Thai filenames in URLs are handled automatically with `encodeURI` — you do not need to URL-encode the filenames yourself.
+Entries grouped by `audio` (e.g. `ค_ค_ฅ_ฆ`) all share one audio file.
+Categories filter the array by `group` and combinations.
+The helper `getEntriesForCategory(categoryId)` returns the right slice.
 
 ---
 
-## 🚀 Deploying to GitHub Pages
+## Customising
 
-1. Create a new GitHub repository.
-2. Upload all files from this project, plus your `Sarabun/` and `Sound/` folders, to the repo root.
-3. Go to **Settings → Pages**.
-4. Under **Source**, choose **Deploy from a branch**, select the `main` branch and the `/ (root)` folder, then save.
-5. Wait ~1 minute. Your site will be live at `https://<your-username>.github.io/<your-repo>/`.
-
-That's it — no build step, no dependencies.
-
----
-
-## ⌨️ Keyboard shortcuts
-
-During a quiz, students can use:
-
-- **1 – 4** — pick a choice
-- **R** — replay the audio (in Listen mode)
-- **Enter** — go to the next question after answering
-- **Esc** — close the About pop-up
+- **Audio extension**: change `AUDIO_EXTENSION` at the top of `app.js`
+  (`'mp3'` → `'ogg'` etc.).
+- **Theme colours**: see the `:root` token block at the top of
+  `styles.css`. The palette is warm cream + deep teal + temple gold.
+- **Add a topic**: append to the `TOPICS` array in `app.js` and add a
+  matching set of modes/categories. The home page picks them up
+  automatically.
 
 ---
 
-## 🛠 Customizing the content
+## Browser support
 
-### Adding or fixing a letter
-
-Edit `data.js` — each entry has the shape:
-
-```js
-{ thai: 'ก', group: 'middle', audio: 'ก ไก่', description: 'Chicken' }
-```
-
-Group values: `middle`, `high`, `lowPair`, `lowSingle`, `vowel`.
-
-### Adding a new topic / mode
-
-1. Add an entry to the `TOPICS` array in `app.js`.
-2. Add corresponding modes to the `MODES` map.
-3. Add a new question-builder branch in `buildQuestion()` if the new mode uses different question/answer types.
-
-The current architecture (state machine + render functions) is designed so adding topics requires editing config arrays at the top of `app.js`, not touching the render or quiz logic.
-
-### Changing the design
-
-All design tokens live as CSS variables at the top of `styles.css` (`:root { --bg, --primary, --accent, ... }`). Adjusting these will propagate site-wide.
+Modern Chromium, Firefox, and Safari (desktop + mobile). The app uses
+`localStorage` for persistence; if a browser blocks it (private mode in
+some configs), the app still works — it just won't auto-resume.
 
 ---
 
-## 🧑‍🏫 About the teacher
-
-Built for the students of **Om** (italki teacher).
-
-- **italki:** [Profile](https://www.italki.com/en/teacher/16591055) · [Referral link](https://www.italki.com/en/i/ref/fdBGcf?hl=en&utm_medium=user_referral&utm_source=copylink_share)
-- **Instagram:** [@amanvslang](https://www.instagram.com/amanvslang/)
-- **TikTok:** [@paskornlar](https://www.tiktok.com/@paskornlar)
-
----
-
-## 📜 License / credits
-
-Sarabun font © Cadson Demak, licensed under the SIL Open Font License.
-Site code is yours to modify and adapt for your students.
+Made with care for Thai language learners. Enjoy the practice. 🇹🇭

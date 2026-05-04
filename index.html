@@ -4,28 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#FBF6EC" />
-  <meta name="description" content="Master the Thai alphabet — interactive lessons by Om for italki students and language learners." />
-  <title>Master Thai — Learn the Thai Alphabet with Om</title>
+  <meta name="description" content="Thai Letter Master — interactive Thai alphabet practice with Om for italki students and language learners." />
+  <title>Thai Letter Master — Learn the Thai Alphabet with Om</title>
+
+  <!-- Modern font option (loaded from Google Fonts CDN) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="font-sarabun">
   <header class="site-header">
     <div class="header-inner">
       <button class="brand" data-action="go-home" type="button" aria-label="Go to home">
-        <span class="brand-mark" aria-hidden="true">ก</span>
+        <span class="brand-mark" aria-hidden="true">อ</span>
         <span class="brand-text">
-          <span class="brand-name">Master Thai</span>
-          <span class="brand-tag">เรียนภาษาไทยกับครูโอม</span>
+          <span class="brand-name">Thai Letter Master</span>
+          <span class="brand-tag">เรียนภาษาไทยกับนาย "ออม"</span>
         </span>
       </button>
-      <button class="about-btn" data-action="open-about" type="button" aria-label="About this site">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
-        <span>About</span>
-      </button>
+
+      <div class="header-actions">
+        <!-- Timer toggle (visible only during quiz; controlled via .quiz-active body class) -->
+        <button id="timer-toggle" class="timer-toggle" data-action="toggle-timer" type="button" aria-label="Toggle stopwatch" title="Toggle stopwatch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="13" r="8"/>
+            <path d="M12 9v4l2 2"/>
+            <path d="M9 2h6"/>
+          </svg>
+          <span id="timer-display" class="timer-display">0:00</span>
+        </button>
+
+        <button class="about-btn" data-action="open-about" type="button" aria-label="About this site">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>About</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -36,12 +55,13 @@
       <span class="footer-mark" aria-hidden="true">◆</span>
       <span>Crafted with care for Thai language learners</span>
       <span class="footer-mark" aria-hidden="true">◆</span>
+      <span class="footer-version">v1.1</span>
     </div>
   </footer>
 
   <!-- About modal -->
-  <div id="about-modal" class="modal-backdrop" role="presentation" data-action="close-about">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title" onclick="event.stopPropagation()">
+  <div id="about-modal" class="modal-backdrop" role="presentation">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
       <button class="modal-close" data-action="close-about" type="button" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="18" y1="6" x2="6" y2="18"></line>
