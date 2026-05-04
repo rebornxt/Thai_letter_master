@@ -574,7 +574,7 @@ body::before {
 
 .thai-letter-display {
   font-size: clamp(80px, 16vw, 160px);
-  font-weight: 700;
+  font-weight: 400;
   color: var(--primary);
   line-height: 1;
   letter-spacing: -2px;
@@ -593,7 +593,7 @@ body::before {
 
 .description-display {
   font-size: clamp(20px, 3vw, 26px);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text);
   line-height: 1.5;
   max-width: 680px;
@@ -672,7 +672,7 @@ body::before {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  font-weight: 600;
+  font-weight: 400;
   text-align: center;
   transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
   min-height: 96px;
@@ -686,7 +686,7 @@ body::before {
 .choice.locked { cursor: default; }
 .choice .letter-large {
   font-size: 56px;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--text);
   line-height: 1;
   letter-spacing: -1px;
@@ -695,7 +695,7 @@ body::before {
   font-size: 15px;
   font-style: italic;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 400;
   text-align: center;
   line-height: 1.4;
   max-width: 320px;
@@ -1419,32 +1419,24 @@ body.quiz-active .timer-toggle {
   font-weight: 700;
   text-align: center;
   transition: transform 0.2s ease;
-  overflow: hidden;
   isolation: isolate;
+  /* Breathing glow — no movement, just slow opacity/scale on the shadow */
+  animation: glow-breathe 4.5s ease-in-out infinite;
 }
 .count-btn-all::before {
+  /* soft inner luminance that breathes in opposition for depth */
   content: '';
   position: absolute;
-  inset: -3px;
+  inset: 0;
   border-radius: inherit;
-  padding: 3px;
-  background: conic-gradient(
-    from 0deg,
-    rgba(195, 154, 58, 0.0),
-    rgba(195, 154, 58, 0.9) 30%,
-    rgba(255, 220, 130, 1) 50%,
-    rgba(195, 154, 58, 0.9) 70%,
-    rgba(195, 154, 58, 0.0)
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  animation: glow-rotate 3.5s linear infinite;
+  background: radial-gradient(80% 65% at 50% 50%, rgba(255, 230, 150, 0.55), transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
   z-index: -1;
+  animation: glow-breathe-inner 4.5s ease-in-out infinite;
 }
 .count-btn-all::after {
+  /* hover-only warm wash */
   content: '';
   position: absolute;
   inset: 0;
@@ -1479,8 +1471,29 @@ body.quiz-active .timer-toggle {
   font-size: 18px;
   filter: drop-shadow(0 0 6px rgba(255, 200, 80, 0.6));
 }
-@keyframes glow-rotate {
-  to { transform: rotate(1turn); }
+@keyframes glow-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0   0 rgba(195, 154, 58, 0.0),
+      0 0 14px 0 rgba(195, 154, 58, 0.20),
+      0 4px 14px rgba(195, 154, 58, 0.12);
+    border-color: rgba(195, 154, 58, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 0 0   0 rgba(195, 154, 58, 0.0),
+      0 0 38px 6px rgba(255, 200, 80, 0.55),
+      0 6px 22px rgba(195, 154, 58, 0.25);
+    border-color: var(--accent);
+  }
+}
+@keyframes glow-breathe-inner {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.65; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .count-btn-all,
+  .count-btn-all::before { animation: none; }
 }
 
 .count-btn-endless {
@@ -1520,9 +1533,35 @@ body.quiz-active .timer-toggle {
   letter-spacing: 0.1em;
 }
 .count-btn-endless .count-btn-infinity {
-  display: inline-block;
-  margin-right: 6px;
-  font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 8px;
+  height: 24px;
+}
+.count-btn-endless .infinity-svg {
+  width: 60px;
+  height: 24px;
+  overflow: visible; /* let glow extend beyond the box */
+  color: var(--primary);
+}
+.count-btn-endless .infinity-svg path {
+  opacity: 0.55;
+}
+.count-btn-endless .infinity-light {
+  fill: var(--accent);
+  filter:
+    drop-shadow(0 0 4px rgba(255, 200, 80, 0.95))
+    drop-shadow(0 0 10px rgba(195, 154, 58, 0.7));
+}
+.count-btn-endless:hover .infinity-svg path { opacity: 0.85; }
+.count-btn-endless:hover .infinity-light {
+  filter:
+    drop-shadow(0 0 6px rgba(255, 220, 100, 1))
+    drop-shadow(0 0 14px rgba(195, 154, 58, 0.85));
+}
+@media (prefers-reduced-motion: reduce) {
+  .count-btn-endless .infinity-light animateMotion { dur: 0s; }
 }
 
 @media (max-width: 560px) {
@@ -1666,17 +1705,27 @@ body.quiz-active .timer-toggle {
   color: var(--error);
 }
 
-/* "See" mode: anonymous play-only choices ---------------------- */
+/* "See" mode: anonymous play button + separate Choose button -- */
 .choice.choice-audio-only {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 110px;
-  padding: 16px;
+  gap: 14px;
+  min-height: 150px;
+  padding: 18px 16px 16px;
+  position: relative;
+}
+.choice.choice-audio-only:hover:not(.locked) {
+  /* override default .choice hover so it doesn't suggest the whole tile is clickable */
+  border-color: var(--border);
+  transform: none;
+  box-shadow: none;
+  background: var(--surface);
 }
 .choice.choice-audio-only .audio-only-btn {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: var(--primary);
   color: var(--surface);
@@ -1685,22 +1734,20 @@ body.quiz-active .timer-toggle {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition);
+  transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
   box-shadow: 0 4px 14px rgba(20, 94, 88, 0.25);
-  pointer-events: none; /* parent button handles selection */
+  font-family: inherit;
 }
-.choice.choice-audio-only:hover .audio-only-btn {
-  background: var(--primary-hover, #0E4642);
+.choice.choice-audio-only .audio-only-btn:hover {
+  background: var(--primary-hover);
   transform: scale(1.06);
   box-shadow: 0 6px 20px rgba(20, 94, 88, 0.35);
 }
-.choice.choice-audio-only.locked .audio-only-btn {
-  pointer-events: none;
-}
+.choice.choice-audio-only .audio-only-btn:active { transform: scale(0.96); }
 .choice.choice-audio-only .audio-only-btn svg {
-  width: 30px;
-  height: 30px;
-  margin-left: 3px; /* optical centering for play triangle */
+  width: 26px;
+  height: 26px;
+  margin-left: 3px;
 }
 .choice.choice-audio-only .audio-only-btn.playing {
   background: var(--accent);
@@ -1710,30 +1757,57 @@ body.quiz-active .timer-toggle {
   0%, 100% { box-shadow: 0 4px 14px rgba(195, 154, 58, 0.4); }
   50%      { box-shadow: 0 4px 22px rgba(195, 154, 58, 0.7); }
 }
-/* Reveal sound name after answering */
+
+.choice.choice-audio-only .choose-btn {
+  appearance: none;
+  border: 1.5px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, transform .15s ease, opacity .15s ease;
+}
+.choice.choice-audio-only .choose-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--surface);
+  transform: translateY(-1px);
+}
+.choice.choice-audio-only .choose-btn:active:not(:disabled) { transform: translateY(0); }
+.choice.choice-audio-only .choose-btn:disabled {
+  cursor: default;
+  opacity: 0.0;        /* hide the empty pill once locked; reveal-name takes its place */
+  pointer-events: none;
+}
+
+/* Locked state: hide Choose button, reveal sound name in its place */
 .choice.choice-audio-only .reveal-name {
   display: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-family: 'Sarabun', sans-serif;
+  text-align: center;
+}
+body.font-noto .choice.choice-audio-only .reveal-name {
+  font-family: 'Noto Sans Thai', sans-serif;
 }
 .choice.choice-audio-only.locked .reveal-name {
   display: block;
   position: absolute;
-  bottom: 10px;
   left: 0; right: 0;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted);
-  font-family: 'Sarabun', sans-serif;
+  bottom: 18px;
 }
-body.font-noto .choice.choice-audio-only.locked .reveal-name {
-  font-family: 'Noto Sans Thai', sans-serif;
-}
-.choice.choice-audio-only.correct .reveal-name { color: var(--success); }
-.choice.choice-audio-only.wrong .reveal-name   { color: var(--error); }
-.choice.choice-audio-only {
-  position: relative;
-  padding-bottom: 36px; /* room for revealed name */
-}
+.choice.choice-audio-only.correct .reveal-name { color: var(--success); font-weight: 600; }
+.choice.choice-audio-only.wrong .reveal-name   { color: var(--error); font-weight: 600; }
+.choice.choice-audio-only.locked.correct { border-color: var(--success); background: var(--success-soft); }
+.choice.choice-audio-only.locked.wrong   { border-color: var(--error);   background: var(--error-soft); }
+.choice.choice-audio-only.locked.dimmed { opacity: 0.55; }
+
 
 /* Endless mode: question counter shows "Q n" instead of fraction */
 .score.endless::before {
@@ -1750,3 +1824,60 @@ body.font-noto .choice.choice-audio-only.locked .reveal-name {
 /* Modal - ensure clicks bubble for delegation ----------------- */
 /* (no rule needed; just re-affirm the modal-close button styling stays clickable) */
 .modal-close { z-index: 2; }
+
+/* Resume-session modal ---------------------------------------- */
+.resume-modal-backdrop { z-index: 200; }
+.resume-modal {
+  text-align: center;
+  max-width: 480px;
+}
+.resume-modal h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 6px 0 8px;
+}
+.resume-modal .resume-lead {
+  font-size: 14.5px;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+  line-height: 1.55;
+}
+.resume-summary {
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 0 0 22px;
+}
+.resume-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 13.5px;
+}
+.resume-row:last-child { border-bottom: 0; }
+.resume-row span {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.resume-row strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.resume-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.resume-actions .btn { min-width: 130px; justify-content: center; }
+@media (max-width: 480px) {
+  .resume-actions { flex-direction: column-reverse; }
+  .resume-actions .btn { width: 100%; }
+}

@@ -536,7 +536,21 @@ function renderCountSelect() {
           </button>
           <button class="count-btn-endless" data-action="start-quiz-endless" type="button"
                   title="Practice as long as you want — end the session whenever">
-            <span class="count-btn-headline"><span class="count-btn-infinity">∞</span>Endless</span>
+            <span class="count-btn-headline">
+              <span class="count-btn-infinity" aria-hidden="true">
+                <svg viewBox="0 0 60 24" class="infinity-svg" xmlns="http://www.w3.org/2000/svg">
+                  <path id="endless-path-${state.categoryId}"
+                        d="M 11,12 C 11,2 23,2 30,12 C 37,22 49,22 49,12 C 49,2 37,2 30,12 C 23,22 11,22 11,12 Z"
+                        fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle r="2.6" class="infinity-light">
+                    <animateMotion dur="2.6s" repeatCount="indefinite" rotate="auto">
+                      <mpath href="#endless-path-${state.categoryId}"/>
+                    </animateMotion>
+                  </circle>
+                </svg>
+              </span>
+              Endless
+            </span>
             <span class="count-btn-sub">until you stop</span>
           </button>
         </div>
@@ -694,14 +708,18 @@ function renderChoices(q) {
     }
 
     if (c.kind === 'sound') {
-      // Anonymous play-only buttons. After answering, reveal sound name.
+      // Anonymous play button + separate "Choose" button. Tapping play previews; tapping Choose commits.
+      const isLockedClass = state.hasAnswered ? 'locked' : '';
       return `
-        <button class="choice choice-audio-only ${stateClass}" data-action="select-choice" data-idx="${idx}">
-          <span class="audio-only-btn" data-audio="${escapeHtml(c.audio)}" data-idx="${idx}" aria-hidden="true">
+        <div class="choice choice-audio-only ${stateClass} ${isLockedClass}">
+          <button class="audio-only-btn" data-action="preview-sound" data-audio="${escapeHtml(c.audio)}" data-idx="${idx}" type="button" aria-label="Listen to option ${idx + 1}">
             ${ICONS.play}
-          </span>
+          </button>
+          <button class="choose-btn" data-action="select-choice" data-idx="${idx}" type="button" ${state.hasAnswered ? 'disabled' : ''}>
+            <span class="choose-btn-label">${state.hasAnswered ? '' : 'Choose'}</span>
+          </button>
           <span class="reveal-name">${escapeHtml(c.display)}</span>
-        </button>
+        </div>
       `;
     }
     return '';
@@ -758,7 +776,9 @@ function renderFeedback(q) {
 // ---------- View: Results ----------
 
 function renderResults() {
-  const total = state.questionIndex; // number of answered questions (works for endless too)
+  // Count answered questions: questionIndex is 0-based; the final answered question
+  // hasn't yet incremented the index when transitioning to results, so add 1 if hasAnswered.
+  const total = state.questionIndex + (state.hasAnswered ? 1 : 0);
   const score = state.correctCount;
   const pct = total === 0 ? 0 : Math.round((score / total) * 100);
 
@@ -882,6 +902,12 @@ function startQuizEndless() {
 // ---------- Actions ----------
 
 function dispatch(action, target, event) {
+  // Mid-quiz navigation: snapshot CURRENT state (including stopwatch) before changing view.
+  const navAwayActions = new Set(['go-home', 'go-modes', 'go-categories', 'open-topic', 'open-mode']);
+  if (state.view === 'quiz' && navAwayActions.has(action)) {
+    saveProgress(); // captures the live quiz state with current elapsed time
+  }
+
   switch (action) {
     case 'go-home':
       stopStopwatch();
@@ -989,6 +1015,13 @@ function dispatch(action, target, event) {
       break;
     }
 
+    case 'preview-sound': {
+      // See-mode: tap play button on a choice tile to listen freely; does NOT commit.
+      const audio = target.dataset.audio;
+      if (audio) playAudio(audio, target);
+      break;
+    }
+
     case 'hear-correct': {
       const q = currentQuestion();
       if (q) playAudio(q.correct.audio);
@@ -1048,6 +1081,23 @@ function dispatch(action, target, event) {
 
     case 'open-about':  openAbout();  break;
     case 'close-about': closeAbout(); break;
+
+    case 'resume-continue': {
+      const saved = readSavedQuiz();
+      closeResumeModal();
+      if (saved) {
+        applySavedQuiz(saved);
+        if (settings.timerOn) startStopwatch();
+        render();
+      }
+      break;
+    }
+    case 'resume-startover': {
+      clearSavedQuiz();
+      closeResumeModal();
+      // Stay on home view (already rendered), nothing else to do.
+      break;
+    }
   }
 }
 
@@ -1260,9 +1310,19 @@ function loadSettings() {
 
 function saveProgress() {
   try {
+    if (state.view === 'results') {
+      // Quiz finished — clear the saved snapshot so we don't prompt later.
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    if (state.view !== 'quiz') {
+      // Only save mid-quiz state. Navigating to home / modes / categories
+      // must NOT clobber the in-progress quiz snapshot — leave it intact.
+      return;
+    }
     const snapshot = {
       version: APP_VERSION,
-      view: state.view,
+      view: 'quiz',
       topicId: state.topicId,
       modeId: state.modeId,
       categoryId: state.categoryId,
@@ -1276,7 +1336,7 @@ function saveProgress() {
       endlessCurrent: state.endlessCurrent,
       stopwatch: {
         accumulated: getStopwatchMs(),
-        running: false, // saved as paused; restored as paused, resumed on quiz view
+        running: false,
       },
       savedAt: Date.now(),
     };
@@ -1284,37 +1344,110 @@ function saveProgress() {
   } catch (_) {}
 }
 
-function loadProgress() {
+function readSavedQuiz() {
+  // Peek at saved quiz without applying it. Returns parsed snapshot or null.
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
+    if (!raw) return null;
     const s = JSON.parse(raw);
-    if (!s || s.version !== APP_VERSION) return false;
-    // Only resume if user was actively in a quiz
-    if (s.view !== 'quiz') return false;
+    if (!s || s.version !== APP_VERSION) return null;
+    if (s.view !== 'quiz') return null;
+    if (!Array.isArray(s.questions) && s.questionMode !== 'endless') return null;
+    return s;
+  } catch (_) { return null; }
+}
 
-    state.view = s.view;
-    state.topicId = s.topicId;
-    state.modeId = s.modeId;
-    state.categoryId = s.categoryId;
-    state.questionMode = s.questionMode || 'fixed';
-    state.questionCount = s.questionCount || 10;
-    state.questions = Array.isArray(s.questions) ? s.questions : [];
-    state.questionIndex = s.questionIndex || 0;
-    state.correctCount = s.correctCount || 0;
-    state.hasAnswered = !!s.hasAnswered;
-    state.selectedChoiceIdx = (typeof s.selectedChoiceIdx === 'number') ? s.selectedChoiceIdx : null;
-    state.endlessCurrent = s.endlessCurrent || null;
+function applySavedQuiz(s) {
+  state.view = 'quiz';
+  state.topicId = s.topicId;
+  state.modeId = s.modeId;
+  state.categoryId = s.categoryId;
+  state.questionMode = s.questionMode || 'fixed';
+  state.questionCount = s.questionCount || 10;
+  state.questions = Array.isArray(s.questions) ? s.questions : [];
+  state.questionIndex = s.questionIndex || 0;
+  state.correctCount = s.correctCount || 0;
+  state.hasAnswered = !!s.hasAnswered;
+  state.selectedChoiceIdx = (typeof s.selectedChoiceIdx === 'number') ? s.selectedChoiceIdx : null;
+  state.endlessCurrent = s.endlessCurrent || null;
 
-    if (s.stopwatch) {
-      stopwatch.accumulated = Math.max(0, Number(s.stopwatch.accumulated) || 0);
-      stopwatch.running = false;
-      stopwatch.startedAt = null;
-    }
-    return true;
-  } catch (_) {
-    return false;
+  if (s.stopwatch) {
+    stopwatch.accumulated = Math.max(0, Number(s.stopwatch.accumulated) || 0);
+    stopwatch.running = false;
+    stopwatch.startedAt = null;
   }
+}
+
+function clearSavedQuiz() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+}
+
+function loadProgress() {
+  const s = readSavedQuiz();
+  if (!s) return false;
+  applySavedQuiz(s);
+  return true;
+}
+
+// ---------- Resume modal ----------
+
+function showResumeModal(saved) {
+  // Build a small summary of what we found
+  const mode = MODES.find(m => m.id === saved.modeId);
+  const category = mode && mode.categories.find(c => c.id === saved.categoryId);
+  const modeName = mode ? mode.title : 'Practice';
+  const catName = category ? category.title : '';
+  const modeBadge = saved.questionMode === 'endless' ? '∞ Endless'
+                  : saved.questionMode === 'all' ? '★ All'
+                  : `${(saved.questions || []).length} questions`;
+  const progress = saved.questionMode === 'endless'
+    ? `${saved.correctCount || 0} correct · Q${(saved.questionIndex || 0) + 1}`
+    : `Q${(saved.questionIndex || 0) + 1} of ${(saved.questions || []).length}`;
+  const elapsed = saved.stopwatch ? formatTime(Number(saved.stopwatch.accumulated) || 0) : '0:00';
+
+  let modal = document.getElementById('resume-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'resume-modal';
+    modal.className = 'modal-backdrop resume-modal-backdrop';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div class="modal resume-modal" role="dialog" aria-modal="true" aria-labelledby="resume-title">
+      <div class="modal-eyebrow">
+        <span class="diamond" aria-hidden="true">◆</span>
+        <span>Unfinished session</span>
+        <span class="diamond" aria-hidden="true">◆</span>
+      </div>
+      <h2 id="resume-title">Welcome back!</h2>
+      <p class="resume-lead">You have a session in progress. Continue where you left off, or start fresh?</p>
+
+      <div class="resume-summary">
+        <div class="resume-row"><span>Mode</span><strong>${escapeHtml(modeName)}</strong></div>
+        ${catName ? `<div class="resume-row"><span>Category</span><strong>${escapeHtml(catName)}</strong></div>` : ''}
+        <div class="resume-row"><span>Length</span><strong>${escapeHtml(modeBadge)}</strong></div>
+        <div class="resume-row"><span>Progress</span><strong>${escapeHtml(progress)}</strong></div>
+        <div class="resume-row"><span>Time</span><strong>⏱ ${escapeHtml(elapsed)}</strong></div>
+      </div>
+
+      <div class="resume-actions">
+        <button class="btn btn-ghost" data-action="resume-startover" type="button">
+          Start over
+        </button>
+        <button class="btn btn-primary" data-action="resume-continue" type="button">
+          Resume
+        </button>
+      </div>
+    </div>
+  `;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeResumeModal() {
+  const modal = document.getElementById('resume-modal');
+  if (modal) modal.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 // ---------- Font ----------
@@ -1330,12 +1463,13 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   applyFontSetting();
 
-  const resumed = loadProgress();
-  if (resumed) {
-    showToast('Welcome back — continuing where you left off.', 'success');
-    if (settings.timerOn) startStopwatch();
-  }
-
+  // Always render home first; prompt user to resume if a saved quiz exists.
+  state.view = 'home';
   render();
   refreshTimerUI();
+
+  const saved = readSavedQuiz();
+  if (saved) {
+    showResumeModal(saved);
+  }
 });
