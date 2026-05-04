@@ -659,9 +659,8 @@ body::before {
   gap: 14px;
   margin-bottom: var(--space);
 }
-@media (max-width: 560px) {
-  .choices { grid-template-columns: 1fr; }
-}
+/* On mobile, keep choices as a 2×2 grid (the per-tile mobile sizing is in the
+   tightening block at the bottom of this file). */
 
 .choice {
   position: relative;
@@ -1053,12 +1052,8 @@ body::before {
   .brand-mark { width: 36px; height: 36px; font-size: 20px; }
   .hero { padding: 28px 22px; }
   .hero::after { font-size: 240px; right: -40px; bottom: -60px; }
-  .question-card { padding: 36px 22px; }
   .description-display::before { left: -4px; top: -22px; font-size: 60px; }
   .description-display::after { right: 0; bottom: -40px; font-size: 60px; }
-  .choice { padding: 18px 16px; min-height: 84px; }
-  .choice .letter-large { font-size: 44px; }
-  .choice .sound-text { font-size: 24px; }
   .feedback { padding: 14px 16px; }
   .feedback-actions { width: 100%; }
   .feedback-actions .btn { flex: 1; justify-content: center; }
@@ -1887,4 +1882,176 @@ body.font-noto .choice.choice-audio-only .reveal-name {
 @media (max-width: 480px) {
   .resume-actions { flex-direction: column-reverse; }
   .resume-actions .btn { width: 100%; }
+}
+
+/* ============================================================
+   v1.4 — Mobile tightening
+   Goal: question card + 4 choices fit one viewport on small phones.
+   Single rule block, mobile-only (<= 560px).
+   ============================================================ */
+@media (max-width: 560px) {
+
+  /* Header: thinner sticky bar */
+  :root { --header-h: 56px; }
+  .site-header { height: 56px; }
+  .header-actions { gap: 6px; }
+  .timer-toggle { padding: 6px 10px; font-size: 12.5px; gap: 6px; }
+  .timer-toggle svg { width: 14px; height: 14px; }
+  .about-btn { padding: 7px 12px; font-size: 13px; gap: 6px; }
+  .about-btn svg { width: 14px; height: 14px; }
+
+  /* Container: tighter top/bottom on quiz screens */
+  body.quiz-active .container {
+    padding: 14px 14px 20px;
+  }
+
+  /* Crumbs: compress and stack on quiz */
+  body.quiz-active .crumbs {
+    margin-bottom: 10px;
+    gap: 8px;
+    font-size: 12.5px;
+    flex-wrap: wrap;
+  }
+  body.quiz-active .crumbs button.back {
+    padding: 5px 11px 5px 8px;
+    font-size: 12.5px;
+  }
+  body.quiz-active .crumbs button.back svg { width: 12px; height: 12px; }
+  /* Hide deep crumb trail on mobile during quiz — back button is enough */
+  body.quiz-active .crumbs > div { display: none; }
+
+  /* Quiz toolbar: compact */
+  body.quiz-active .quiz-toolbar {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+  body.quiz-active .quiz-toolbar .btn-icon {
+    padding: 5px 10px;
+    font-size: 12px;
+    gap: 5px;
+  }
+  body.quiz-active .quiz-toolbar .btn-icon svg { width: 12px; height: 12px; }
+
+  /* Quiz meta (progress + score): tighter */
+  body.quiz-active .quiz-meta {
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  body.quiz-active .progress { height: 6px; min-width: 0; }
+  body.quiz-active .score { padding: 5px 11px; font-size: 12px; }
+  body.quiz-active .score .dot { width: 6px; height: 6px; }
+
+  /* Question card: way less padding */
+  .question-card {
+    padding: 18px 18px 22px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+  }
+  .question-prompt {
+    font-size: 11.5px;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+  }
+  .question-prompt::before, .question-prompt::after { width: 16px; }
+
+  /* Listen mode: smaller play button */
+  .audio-play {
+    padding: 13px 22px;
+    font-size: 15px;
+    gap: 10px;
+  }
+  .audio-play svg { width: 20px; height: 20px; }
+  .audio-hint { margin-top: 10px; font-size: 12.5px; }
+
+  /* See mode: tighter Thai letter display */
+  .thai-letter-display {
+    font-size: clamp(64px, 22vw, 110px);
+  }
+  .thai-letter-display.placeholder {
+    font-size: 16px;
+    margin: 14px auto;
+  }
+
+  /* Description mode: smaller */
+  .description-display {
+    font-size: clamp(16px, 4.4vw, 20px);
+    line-height: 1.45;
+  }
+
+  /* Choices: 2×2 grid, much shorter tiles */
+  .choices {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .choice {
+    padding: 10px 8px;
+    min-height: 76px;
+    border-radius: 14px;
+    border-width: 1.5px;
+  }
+  .choice .letter-large {
+    font-size: 40px;
+    line-height: 1;
+  }
+  .choice .placeholder-text {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .choice .sound-text { font-size: 20px; }
+  .choice .letter-large.is-obsolete::after {
+    font-size: 9px;
+    margin-top: 2px;
+  }
+
+  /* See-mode choice tiles: more compact (play + Choose stacked) */
+  .choice.choice-audio-only {
+    min-height: 110px;
+    padding: 10px 8px 12px;
+    gap: 8px;
+  }
+  .choice.choice-audio-only .audio-only-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .choice.choice-audio-only .audio-only-btn svg {
+    width: 20px;
+    height: 20px;
+    margin-left: 2px;
+  }
+  .choice.choice-audio-only .choose-btn {
+    padding: 5px 14px;
+    font-size: 12px;
+  }
+  .choice.choice-audio-only.locked .reveal-name {
+    bottom: 10px;
+    font-size: 13px;
+  }
+
+  /* Feedback panel: trim padding & no top margin */
+  .feedback {
+    padding: 12px 14px;
+    margin-top: 10px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+  .feedback-text { font-size: 14px; }
+  .feedback-detail { font-size: 12.5px; line-height: 1.4; }
+  .feedback-actions .btn {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  /* Footer: hide on quiz screen — keeps choices visible */
+  body.quiz-active .site-footer { display: none; }
+}
+
+/* Even tighter for short viewports (e.g. 360×640 with browser chrome) */
+@media (max-width: 560px) and (max-height: 720px) {
+  body.quiz-active .container { padding-top: 10px; }
+  .question-card { padding: 14px 16px 16px; margin-bottom: 10px; }
+  .audio-hint { display: none; }
+  .choice { min-height: 68px; }
+  .choice .letter-large { font-size: 36px; }
+  .choice.choice-audio-only { min-height: 100px; }
 }

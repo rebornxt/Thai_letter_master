@@ -1,4 +1,4 @@
-# Thai Letter Master  (v1.2.1)
+# Thai Letter Master  (v1.1)
 
 A friendly drill app for memorising the Thai alphabet — built for Om's italki students.
 Three practice modes (Listen / See / Match Description) covering 83 consonants and vowels,
