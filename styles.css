@@ -2306,3 +2306,80 @@ body.font-noto .choice.choice-audio-only .reveal-name {
 @media (max-width: 560px) {
   .stagger > * { animation: none; opacity: 1; }
 }
+
+/* ============================================================
+   v1.3.1 — Categories page mobile compression
+   ============================================================ */
+
+@media (max-width: 560px) {
+  /* Tighter page-head on categories (less than even modes page) */
+  .view-categories .page-head { margin-bottom: 8px; }
+  .view-categories .page-head .page-title { font-size: 20px; }
+  .view-categories .page-head .page-subtitle { font-size: 12.5px; }
+  .view-categories .section-title {
+    margin: 8px 0 8px;
+    font-size: 11px;
+  }
+
+  /* 2-column grid for categories (no descriptions, fits cleanly) */
+  .view-categories .grid.cols-3 {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* Compact, centered category cards */
+  .view-categories .card {
+    padding: 12px 8px 12px;
+    align-items: center;
+    text-align: center;
+    min-height: 0;
+    border-radius: 14px;
+  }
+  .view-categories .card .card-icon {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 4px;
+  }
+  .view-categories .card .card-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+  .view-categories .card .card-thai {
+    font-size: 11px;
+    margin-bottom: 2px;
+    text-align: center;
+    color: var(--accent-hover);
+  }
+  .view-categories .card .card-title {
+    font-size: 14px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    word-break: break-word;
+    text-align: center;
+  }
+  .view-categories .card .card-meta {
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+    margin-top: auto;
+  }
+  /* Drop the arrow on mobile category tiles — taps are implicit */
+  .view-categories .card .card-arrow { display: none; }
+  .view-categories .card .pill {
+    font-size: 10.5px;
+    padding: 2px 8px;
+    font-weight: 600;
+  }
+}
+
+/* Even more compact for short viewports */
+@media (max-width: 560px) and (max-height: 720px) {
+  .view-categories { padding-top: 12px; }
+  .view-categories .page-head { margin-bottom: 6px; }
+  .view-categories .page-head .page-subtitle { display: none; }
+  .view-categories .card { padding: 10px 6px; }
+  .view-categories .card .card-icon { width: 26px; height: 26px; margin-bottom: 2px; }
+  .view-categories .card .card-icon svg { width: 14px; height: 14px; }
+  .view-categories .card .card-thai { font-size: 10.5px; }
+  .view-categories .card .card-title { font-size: 13px; margin-bottom: 4px; }
+}

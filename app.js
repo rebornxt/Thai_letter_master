@@ -480,7 +480,7 @@ function renderCategories() {
   }).join('');
 
   return `
-    <div class="container view">
+    <div class="container view view-categories">
       ${renderCrumbs([
         { label: 'Topics', action: 'go-home' },
         { label: topic.title, action: 'go-modes' },
@@ -940,12 +940,20 @@ function dispatch(action, target, event) {
       render();
       break;
 
-    case 'open-topic':
-      state.topicId = target.dataset.topic;
+    case 'open-topic': {
+      const topicId = target.dataset.topic;
+      state.topicId = topicId;
       state.view = 'modes';
       saveProgress();
       render();
+      // If there's a saved quiz for THIS topic, surface the resume prompt now
+      // that the user has clearly committed to working in this topic.
+      const saved = readSavedQuiz();
+      if (saved && saved.topicId === topicId) {
+        showResumeModal(saved);
+      }
       break;
+    }
 
     case 'go-modes':
       stopStopwatch();
@@ -1610,14 +1618,13 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
   refreshTimerUI();
 
-  const saved = readSavedQuiz();
-  if (saved) {
-    // A mid-quiz session exists — show resume prompt (takes priority over welcome).
-    showResumeModal(saved);
-  } else if (!settings.firstVisitShown) {
-    // First visit (no prior data, no saved quiz) — show About as a welcome.
+  // First-visit welcome: only when this user has never seen it before.
+  if (!settings.firstVisitShown) {
     settings.firstVisitShown = true;
     saveSettings();
     openAbout();
   }
+  // Resume prompt is NOT shown on boot anymore — it's deferred to when the
+  // user actually clicks into the topic that has a saved session.
+  // See the 'open-topic' action below.
 });
