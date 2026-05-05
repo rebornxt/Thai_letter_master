@@ -1,4 +1,4 @@
-# Thai Letter Master  (v1.2.2)
+# Thai Letter Master  (v1.1)
 
 A friendly drill app for memorising the Thai alphabet — built for Om's italki students.
 Three practice modes (Listen / See / Match Description) covering 83 consonants and vowels,
@@ -57,7 +57,7 @@ The `Sound/` and `Sarabun/` folders just need to be in the same folder as
 
 ---
 
-## What's in v1.2.2
+## What's in v1.1
 
 ### Bug fixes
 - The About-modal **close button** now reliably closes the dialog.

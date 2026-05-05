@@ -22,6 +22,13 @@ const TOPICS = [
     description: 'Learn Thai consonants and vowels through three engaging modes — listen, see, and connect each letter to its description.',
     available: true,
   },
+  {
+    id: 'practice-time',
+    title: 'Practice Time',
+    subtitle: 'เวลาฝึกฝน',
+    description: 'Reinforce what you have learned with focused practice drills. Coming soon — currently in development.',
+    available: false,
+  },
 ];
 
 const CONSONANT_CATEGORIES = [
@@ -91,6 +98,9 @@ const state = {
 const settings = {
   font: 'sarabun',        // 'sarabun' | 'noto'
   timerOn: true,
+  questionsAnswered: 0,   // cumulative across all sessions (for engagement popup)
+  firstVisitShown: false, // welcome About-popup already shown on first visit
+  engagementShown: false, // "How is your learning going?" popup already shown
 };
 
 // Stopwatch
@@ -339,9 +349,22 @@ function render() {
 
 function renderHome() {
   const topicCards = TOPICS.map(t => {
-    const disabled = t.available ? '' : 'disabled aria-disabled="true"';
+    if (!t.available) {
+      return `
+        <div class="card featured is-disabled" aria-disabled="true" data-disabled="true">
+          <span class="coming-soon-badge">Coming soon</span>
+          <div class="card-icon">${ICONS.book}</div>
+          <p class="card-thai">${escapeHtml(t.subtitle)}</p>
+          <h3 class="card-title">${escapeHtml(t.title)}</h3>
+          <p class="card-desc">${escapeHtml(t.description)}</p>
+          <div class="card-meta">
+            <span class="pill pill-muted">In development</span>
+          </div>
+        </div>
+      `;
+    }
     return `
-      <button class="card featured" data-action="open-topic" data-topic="${t.id}" ${disabled}>
+      <button class="card featured" data-action="open-topic" data-topic="${t.id}">
         <div class="card-icon">${ICONS.book}</div>
         <p class="card-thai">${escapeHtml(t.subtitle)}</p>
         <h3 class="card-title">${escapeHtml(t.title)}</h3>
@@ -355,40 +378,42 @@ function renderHome() {
   }).join('');
 
   return `
-    <div class="container view">
-      <section class="font-picker" aria-label="Font selection">
-        <div class="font-picker-head">
-          <p class="font-picker-title">Choose your Thai font</p>
-          <span class="font-picker-hint">You can switch any time</span>
-        </div>
-        <div class="font-options">
-          <button class="font-option ${settings.font === 'sarabun' ? 'selected' : ''}"
-                  data-action="set-font" data-font="sarabun" data-font-target="sarabun" type="button">
-            <span class="font-option-check">${ICONS.check}</span>
-            <p class="font-option-label">Standard font</p>
-            <p class="font-option-name">Sarabun</p>
-            <p class="font-option-desc">Easy to read for beginners. Traditional Thai letter forms.</p>
-            <p class="font-option-preview">ก ข ค ง จ ฉ ช</p>
-          </button>
-          <button class="font-option ${settings.font === 'noto' ? 'selected' : ''}"
-                  data-action="set-font" data-font="noto" data-font-target="noto" type="button">
-            <span class="font-option-check">${ICONS.check}</span>
-            <p class="font-option-label">Modern font</p>
-            <p class="font-option-name">Noto Sans Thai</p>
-            <p class="font-option-desc">Commonly used by Thai people in shops, advertisements, and websites.</p>
-            <p class="font-option-preview">ก ข ค ง จ ฉ ช</p>
-          </button>
-        </div>
-      </section>
+    <div class="container view view-home">
+      <div class="home-top">
+        <section class="hero">
+          <p class="hero-thai">เรียนภาษาไทย</p>
+          <h1 class="hero-title">Practice the Thai alphabet, your way.</h1>
+          <p class="hero-desc">
+            A friendly drill app for memorising Thai consonants and vowels.
+            Listen and identify, see and pronounce, or match each letter to its description.
+          </p>
+        </section>
 
-      <section class="hero">
-        <p class="hero-thai">เรียนภาษาไทย</p>
-        <h1 class="hero-title">Practice the Thai alphabet, your way.</h1>
-        <p class="hero-desc">
-          A friendly drill app for memorising Thai consonants and vowels.
-          Listen and identify, see and pronounce, or match each letter to its description.
-        </p>
-      </section>
+        <section class="font-picker" aria-label="Font selection">
+          <div class="font-picker-head">
+            <p class="font-picker-title">Choose your Thai font</p>
+            <span class="font-picker-hint">You can switch any time</span>
+          </div>
+          <div class="font-options">
+            <button class="font-option ${settings.font === 'sarabun' ? 'selected' : ''}"
+                    data-action="set-font" data-font="sarabun" data-font-target="sarabun" type="button">
+              <span class="font-option-check">${ICONS.check}</span>
+              <p class="font-option-label">Standard font</p>
+              <p class="font-option-name">Sarabun</p>
+              <p class="font-option-desc">Easy to read for beginners. Traditional Thai letter forms.</p>
+              <p class="font-option-preview">ก ข ค ง จ ฉ ช</p>
+            </button>
+            <button class="font-option ${settings.font === 'noto' ? 'selected' : ''}"
+                    data-action="set-font" data-font="noto" data-font-target="noto" type="button">
+              <span class="font-option-check">${ICONS.check}</span>
+              <p class="font-option-label">Modern font</p>
+              <p class="font-option-name">Noto Sans Thai</p>
+              <p class="font-option-desc">Commonly used by Thai people in shops, advertisements, and websites.</p>
+              <p class="font-option-preview">ก ข ค ง จ ฉ ช</p>
+            </button>
+          </div>
+        </section>
+      </div>
 
       <h2 class="section-title">Topics</h2>
       <div class="grid cols-2 stagger">
@@ -887,6 +912,18 @@ function startQuizEndless() {
 
 // ---------- Actions ----------
 
+function incrementAnsweredCounter() {
+  settings.questionsAnswered = (settings.questionsAnswered || 0) + 1;
+  saveSettings();
+  // Trigger engagement popup once when crossing 20
+  if (!settings.engagementShown && settings.questionsAnswered >= 20) {
+    settings.engagementShown = true;
+    saveSettings();
+    // Defer slightly so the answer feedback paints first
+    setTimeout(() => showEngagementModal(), 600);
+  }
+}
+
 function dispatch(action, target, event) {
   // Mid-quiz navigation: snapshot CURRENT state (including stopwatch) before changing view.
   const navAwayActions = new Set(['go-home', 'go-modes', 'go-categories', 'open-topic', 'open-mode']);
@@ -980,10 +1017,9 @@ function dispatch(action, target, event) {
       state.selectedChoiceIdx = idx;
       state.hasAnswered = true;
       if (choice.isCorrect) state.correctCount++;
+      incrementAnsweredCounter();
       saveProgress();
       render();
-      // After-answer audio: in see-mode, play what the user picked so they hear their choice.
-      // In listen/description mode, auto-play the correct audio when wrong as a learning aid.
       if (q.mode === 'see') {
         setTimeout(() => {
           const playedBtn = document.querySelector(`[data-idx="${idx}"] .audio-only-btn`);
@@ -1067,6 +1103,7 @@ function dispatch(action, target, event) {
 
     case 'open-about':  openAbout();  break;
     case 'close-about': closeAbout(); break;
+    case 'close-engagement': closeEngagementModal(); break;
 
     case 'resume-continue': {
       const saved = readSavedQuiz();
@@ -1130,6 +1167,7 @@ document.addEventListener('click', (e) => {
   if (!target) {
     // Close modal on backdrop-only click (not clicks inside modal)
     if (e.target.id === 'about-modal') closeAbout();
+    if (e.target.id === 'engagement-modal') closeEngagementModal();
     return;
   }
   const action = target.dataset.action;
@@ -1155,8 +1193,12 @@ document.addEventListener('change', (e) => {
 // Keyboard shortcuts: 1-4 for choices, R to replay, Enter for next, Esc closes modal
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    const modal = $('#about-modal');
-    if (modal && modal.classList.contains('open')) { closeAbout(); return; }
+    const aboutModal = $('#about-modal');
+    if (aboutModal && aboutModal.classList.contains('open')) { closeAbout(); return; }
+    const engageModal = $('#engagement-modal');
+    if (engageModal && engageModal.classList.contains('open')) { closeEngagementModal(); return; }
+    const resumeModal = $('#resume-modal');
+    if (resumeModal && resumeModal.classList.contains('open')) { /* leave open — user must choose */ }
   }
 
   if (state.view !== 'quiz') return;
@@ -1173,6 +1215,7 @@ document.addEventListener('keydown', (e) => {
       state.selectedChoiceIdx = idx;
       state.hasAnswered = true;
       if (choice.isCorrect) state.correctCount++;
+      incrementAnsweredCounter();
       saveProgress();
       render();
       if (q.mode === 'see') {
@@ -1199,6 +1242,113 @@ function openAbout() {
 }
 function closeAbout() {
   $('#about-modal')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ---------- Engagement modal (after 20 questions) ----------
+
+function buildEngagementModal() {
+  let modal = document.getElementById('engagement-modal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'engagement-modal';
+  modal.className = 'modal-backdrop';
+  modal.setAttribute('role', 'presentation');
+  modal.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="engagement-title">
+      <button class="modal-close" data-action="close-engagement" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-eyebrow">
+        <span class="diamond" aria-hidden="true">◆</span>
+        <span>20 questions in!</span>
+        <span class="diamond" aria-hidden="true">◆</span>
+      </div>
+
+      <h2 id="engagement-title">How is your learning going?</h2>
+
+      <p>
+        Awesome — you've already answered 20 questions! Whether some letters are
+        starting to click or you still mix a few up, you're showing up and that's
+        what matters. Keep going at your own pace. 💪
+      </p>
+
+      <div class="modal-section">
+        <h3>Connect With Me</h3>
+
+        <div class="modal-link-row">
+          <div class="modal-link-item">
+            <span class="label">Book a Lesson</span>
+            <a href="https://www.italki.com/en/teacher/16591055" target="_blank" rel="noopener noreferrer">
+              View my italki Profile →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">New to italki?</span>
+            <a href="https://www.italki.com/en/i/ref/fdBGcf?hl=en&utm_medium=user_referral&utm_source=copylink_share" target="_blank" rel="noopener noreferrer">
+              Register here for a discount →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">Instagram</span>
+            <a href="https://www.instagram.com/amanvslang/" target="_blank" rel="noopener noreferrer">
+              @amanvslang →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">TikTok</span>
+            <a href="https://www.tiktok.com/@paskornlar" target="_blank" rel="noopener noreferrer">
+              @paskornlar →
+            </a>
+          </div>
+
+          <div class="modal-link-item">
+            <span class="label">YouTube</span>
+            <span style="color: var(--text-muted); font-style: italic;">soon!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section support-section">
+        <h3><span class="coffee-emoji" aria-hidden="true">☕</span> Support</h3>
+        <p class="support-thanks">
+          If this app has been helpful, you can buy me a coffee — it really keeps
+          me motivated to make more free Thai-learning content. Thank you so much! 🙏
+        </p>
+        <a class="bmac-btn" href="https://buymeacoffee.com/omlar" target="_blank" rel="noopener noreferrer">
+          <span class="bmac-emoji" aria-hidden="true">☕</span>
+          <span>Buy Me a Coffee</span>
+          <span class="bmac-emoji" aria-hidden="true">☕</span>
+        </a>
+      </div>
+
+      <div class="modal-cta">
+        <button class="btn btn-primary" data-action="close-engagement" type="button">
+          Keep learning →
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function showEngagementModal() {
+  const modal = buildEngagementModal();
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEngagementModal() {
+  const modal = document.getElementById('engagement-modal');
+  if (modal) modal.classList.remove('open');
   document.body.style.overflow = '';
 }
 
@@ -1279,6 +1429,9 @@ function saveSettings() {
       font: settings.font,
       timerOn: settings.timerOn,
       customCount: state.customCount,
+      questionsAnswered: settings.questionsAnswered,
+      firstVisitShown: settings.firstVisitShown,
+      engagementShown: settings.engagementShown,
     }));
   } catch (_) {}
 }
@@ -1291,6 +1444,9 @@ function loadSettings() {
     if (obj.font === 'sarabun' || obj.font === 'noto') settings.font = obj.font;
     if (typeof obj.timerOn === 'boolean') settings.timerOn = obj.timerOn;
     if (Number.isFinite(obj.customCount)) state.customCount = clampCustom(obj.customCount);
+    if (Number.isFinite(obj.questionsAnswered)) settings.questionsAnswered = Math.max(0, Math.floor(obj.questionsAnswered));
+    if (typeof obj.firstVisitShown === 'boolean') settings.firstVisitShown = obj.firstVisitShown;
+    if (typeof obj.engagementShown === 'boolean') settings.engagementShown = obj.engagementShown;
   } catch (_) {}
 }
 
@@ -1449,13 +1605,19 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   applyFontSetting();
 
-  // Always render home first; prompt user to resume if a saved quiz exists.
+  // Always render home first.
   state.view = 'home';
   render();
   refreshTimerUI();
 
   const saved = readSavedQuiz();
   if (saved) {
+    // A mid-quiz session exists — show resume prompt (takes priority over welcome).
     showResumeModal(saved);
+  } else if (!settings.firstVisitShown) {
+    // First visit (no prior data, no saved quiz) — show About as a welcome.
+    settings.firstVisitShown = true;
+    saveSettings();
+    openAbout();
   }
 });

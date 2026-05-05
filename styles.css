@@ -2055,3 +2055,254 @@ body.font-noto .choice.choice-audio-only .reveal-name {
   .choice .letter-large { font-size: 36px; }
   .choice.choice-audio-only { min-height: 100px; }
 }
+
+/* ============================================================
+   v1.5 — Home reflow + Practice Time + first-visit modal +
+          engagement modal + tighter mode-select on mobile
+   ============================================================ */
+
+/* ---------- Home: side-by-side hero + font picker ---------- */
+.home-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+@media (min-width: 720px) {
+  .home-top {
+    grid-template-columns: 1.05fr 1fr; /* hero just slightly wider */
+    gap: 24px;
+    align-items: stretch;
+  }
+  .home-top > .hero,
+  .home-top > .font-picker {
+    margin: 0;
+    height: 100%;
+  }
+}
+
+/* Tighter hero on home (avoid clamp inflating padding to 56) */
+.view-home .hero {
+  padding: clamp(22px, 3.5vw, 36px);
+  margin-bottom: 0;
+}
+.view-home .hero-title { margin-bottom: 10px; }
+.view-home .hero-desc { font-size: 15px; line-height: 1.55; }
+.view-home .hero-thai { font-size: clamp(32px, 5vw, 52px); margin-bottom: 4px; }
+
+/* Tighter font picker on home */
+.view-home .font-picker {
+  margin: 0;
+  padding: 18px;
+}
+.view-home .font-picker-head { margin-bottom: 12px; }
+.view-home .font-picker-title { font-size: 12px; }
+.view-home .font-options { gap: 12px; }
+.view-home .font-option { padding: 14px 14px 16px; }
+.view-home .font-option-name { font-size: 16px; margin-bottom: 6px; }
+.view-home .font-option-desc { font-size: 12.5px; line-height: 1.5; margin-bottom: 10px; }
+.view-home .font-option-preview { font-size: 22px; }
+
+/* Reduce section-title spacing on home */
+.view-home .section-title { margin: 22px 0 14px; font-size: 13px; }
+
+/* ---------- Disabled topic card (Practice Time) ---------- */
+.card.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  position: relative;
+  background: linear-gradient(135deg, var(--bg-deep), var(--surface));
+  text-align: left; /* keep card layout consistent */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.card.is-disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+}
+.card.is-disabled .card-icon {
+  background: linear-gradient(135deg, var(--text-muted), var(--text-soft, var(--text-muted)));
+  opacity: 0.6;
+}
+.coming-soon-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pill.pill-muted {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-strong, var(--border));
+}
+
+/* ---------- Modal CTA (Let's learn! / Keep learning) ---------- */
+.modal-cta {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+.modal-cta .btn {
+  min-width: 180px;
+  justify-content: center;
+}
+
+/* ---------- Engagement modal: Support section ---------- */
+.support-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+}
+.support-section h3 .coffee-emoji {
+  margin-right: 4px;
+}
+.support-thanks {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+  line-height: 1.55;
+}
+.bmac-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 22px;
+  background: linear-gradient(135deg, #FFDD66 0%, #F4B73C 100%);
+  color: #4a3008;
+  border-radius: 14px;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  border: 2px solid rgba(180, 130, 40, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(244, 183, 60, 0.3);
+}
+.bmac-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(244, 183, 60, 0.42);
+}
+.bmac-btn:active { transform: translateY(0); }
+.bmac-emoji {
+  font-size: 20px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+
+/* ---------- Mobile compression for home + mode selection ---------- */
+@media (max-width: 560px) {
+  /* Home page */
+  .view-home {
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+  .view-home .hero { padding: 18px 18px 20px; }
+  .view-home .hero-thai { font-size: 30px; }
+  .view-home .hero-title { font-size: 20px; margin-bottom: 8px; }
+  .view-home .hero-desc { font-size: 13.5px; line-height: 1.5; }
+  .view-home .hero::after { font-size: 200px; right: -34px; bottom: -56px; }
+
+  .view-home .font-picker { padding: 14px; }
+  .view-home .font-picker-head { margin-bottom: 10px; }
+  .view-home .font-options { grid-template-columns: 1fr; gap: 10px; }
+  .view-home .font-option { padding: 12px 14px; }
+  .view-home .font-option-name { font-size: 15px; margin-bottom: 4px; }
+  .view-home .font-option-desc { font-size: 12px; margin-bottom: 8px; line-height: 1.4; }
+  .view-home .font-option-preview { font-size: 20px; }
+  .view-home .font-option-label { font-size: 10px; margin-bottom: 2px; }
+
+  .view-home .home-top { gap: 14px; margin-bottom: 14px; }
+  .view-home .section-title { margin: 14px 0 10px; font-size: 12px; }
+
+  /* Topic cards more compact */
+  .view-home .grid.cols-2 { grid-template-columns: 1fr; gap: 10px; }
+  .view-home .card.featured {
+    padding: 16px 16px 16px;
+    border-radius: 18px;
+  }
+  .view-home .card.featured .card-icon {
+    width: 40px; height: 40px;
+    margin-bottom: 8px;
+  }
+  .view-home .card.featured .card-icon svg { width: 20px; height: 20px; }
+  .view-home .card.featured .card-thai { font-size: 13px; margin-bottom: 4px; }
+  .view-home .card.featured .card-title { font-size: 18px; margin-bottom: 6px; }
+  .view-home .card.featured .card-desc { font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
+
+  /* Mode selection page (after tapping a topic) */
+  .view:not(.view-home) .page-head {
+    margin-bottom: 12px;
+  }
+  .view:not(.view-home) .page-head .eyebrow { font-size: 10.5px; margin-bottom: 4px; }
+  .view:not(.view-home) .page-head .page-title {
+    font-size: 22px;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .view:not(.view-home) .page-head .page-subtitle { font-size: 13px; line-height: 1.5; }
+
+  /* Stack mode/category cards more tightly on mobile */
+  .view:not(.view-home).view .grid.cols-3,
+  .view:not(.view-home).view .grid.cols-2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  /* Compact mode/category card padding */
+  .view:not(.view-home) .card {
+    padding: 14px 16px;
+    border-radius: 16px;
+  }
+  .view:not(.view-home) .card .card-icon {
+    width: 36px; height: 36px;
+    margin-bottom: 6px;
+  }
+  .view:not(.view-home) .card .card-icon svg { width: 18px; height: 18px; }
+  .view:not(.view-home) .card .card-thai { font-size: 12px; margin-bottom: 2px; }
+  .view:not(.view-home) .card .card-title { font-size: 16px; margin-bottom: 4px; }
+  .view:not(.view-home) .card .card-desc {
+    font-size: 12.5px;
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+  .view:not(.view-home) .card .card-meta { font-size: 11px; }
+
+  /* Tighter container padding on non-quiz mobile views */
+  .view:not(.view-home) {
+    padding: 14px 14px 22px;
+  }
+
+  /* Compact crumbs on mode/category screens (already done for quiz) */
+  .view:not(.view-home) .crumbs {
+    margin-bottom: 10px;
+    gap: 8px;
+    font-size: 12.5px;
+  }
+  .view:not(.view-home) .crumbs button.back {
+    padding: 5px 11px 5px 8px;
+    font-size: 12.5px;
+  }
+
+  /* Engagement modal mobile spacing */
+  .support-thanks { font-size: 13px; }
+  .bmac-btn { padding: 12px 18px; font-size: 15px; }
+  .bmac-emoji { font-size: 18px; }
+
+  /* Coming-soon badge smaller */
+  .coming-soon-badge { font-size: 10px; padding: 3px 8px; top: 12px; right: 12px; }
+}
+
+/* Hide stagger animation on mobile too — speeds up perceived load */
+@media (max-width: 560px) {
+  .stagger > * { animation: none; opacity: 1; }
+}
