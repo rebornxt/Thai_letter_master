@@ -22,7 +22,7 @@ const ALPHABET_DATA = [
   { id: 13, letter: 'ญ', group: 'lowSingle', audio: 'ย_ญ',        description: 'Low class single sounds like ~yes, you, yellow' },
   { id: 14, letter: 'ฎ', group: 'middle',    audio: 'ด_ฎ',        description: 'Mid class sounds like ~dog, day, door' },
   { id: 15, letter: 'ฏ', group: 'middle',    audio: 'ต_ฏ',        description: 'Mid class sounds like ~stop, star, stay(Like T after S)' },
-  { id: 16, letter: 'ฐ', group: 'lowPair',   audio: 'ถ_ฐ',        description: 'Low class pair sounds like ~time, top, tea' },
+  { id: 16, letter: 'ฐ', group: 'high',      audio: 'ถ_ฐ',        description: 'High class sounds like ~time, top, tea' },
   { id: 17, letter: 'ฑ', group: 'lowPair',   audio: 'ฑ_ฒ_ท_ธ',    description: 'Low class pair sounds like ~time, top, tea' },
   { id: 18, letter: 'ฒ', group: 'lowPair',   audio: 'ฑ_ฒ_ท_ธ',    description: 'Low class pair sounds like ~time, top, tea' },
   { id: 19, letter: 'ณ', group: 'lowSingle', audio: 'น_ณ',        description: 'Low class single sounds like ~no, name, nice' },
