@@ -1,5 +1,5 @@
 /* ============================================================
-   app.js — Thai Letter Master  (v1.1)
+   app.js — Thai Letter Master  (v1.3.2)
    Single-file SPA. State machine + render loop.
    ============================================================ */
 
@@ -8,7 +8,7 @@
 // If your audio files use a different format, change this (mp3 / ogg / wav / m4a).
 const AUDIO_EXTENSION = 'mp3';
 const AUDIO_FOLDER    = 'Sound/';
-const APP_VERSION     = '1.1';
+const APP_VERSION     = '1.3.2';
 const STORAGE_KEY     = 'thai-letter-master:state:v1';
 const SETTINGS_KEY    = 'thai-letter-master:settings:v1';
 const MAX_CUSTOM      = 99;
@@ -111,9 +111,76 @@ const stopwatch = {
   intervalId: null,
 };
 
-let currentAudio = null;  // currently playing Audio element
+// Single reusable Audio element. Creating a new Audio() per play accumulates
+// media-element instances and their listeners; mobile browsers cap simultaneous
+// media decoders (~16) and start failing loads after a while. Reusing one element
+// fixes that. A monotonic token identifies "the current play" — events from
+// superseded plays are silently ignored.
+let audioEl = null;
+let audioToken = 0;
+let activePlayingBtn = null;
 
-// ---------- Utility ----------
+function ensureAudioEl() {
+  if (audioEl) return audioEl;
+  audioEl = new Audio();
+  audioEl.preload = 'auto';
+  // Single set of listeners for the lifetime of the page. They dispatch based
+  // on the token captured when play() was called (stored on the element).
+  audioEl.addEventListener('ended', () => {
+    if (audioEl._playToken !== audioToken) return;
+    if (activePlayingBtn) { activePlayingBtn.classList.remove('playing'); activePlayingBtn = null; }
+  });
+  audioEl.addEventListener('error', () => {
+    if (audioEl._playToken !== audioToken) return; // stale — silently ignore
+    if (audioEl._suppressErrorToast) { audioEl._suppressErrorToast = false; return; }
+    if (activePlayingBtn) { activePlayingBtn.classList.remove('playing'); activePlayingBtn = null; }
+    const name = audioEl._currentName || '';
+    showToast(`Couldn't load audio "${name}.${AUDIO_EXTENSION}". Make sure the file is in the Sound folder.`);
+  });
+  return audioEl;
+}
+
+function stopAudio() {
+  audioToken++; // invalidates any in-flight events
+  if (audioEl) {
+    try { audioEl.pause(); } catch (_) {}
+    audioEl._suppressErrorToast = true; // ignore the next error (from interruption)
+  }
+  if (activePlayingBtn) { activePlayingBtn.classList.remove('playing'); activePlayingBtn = null; }
+  // Defensive: clear any stale UI playing markers
+  $$('.audio-play.playing, .audio-only-btn.playing, .preview-btn.playing')
+    .forEach(el => el.classList.remove('playing'));
+}
+
+function playAudio(audioName, button) {
+  if (!audioName) return;
+  stopAudio();
+  const myToken = ++audioToken;
+  const audio = ensureAudioEl();
+
+  audio._playToken = myToken;
+  audio._currentName = audioName;
+  audio._suppressErrorToast = false;
+  if (button) {
+    activePlayingBtn = button;
+    button.classList.add('playing');
+  }
+
+  audio.src = audioPath(audioName);
+  // Some mobile browsers need an explicit load() after src change
+  try { audio.load(); } catch (_) {}
+  const playPromise = audio.play();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(() => {
+      // Stale tokens: ignore. Otherwise clear UI quietly (autoplay-blocked etc).
+      if (audio._playToken !== audioToken) return;
+      if (activePlayingBtn === button && button) {
+        button.classList.remove('playing');
+        activePlayingBtn = null;
+      }
+    });
+  }
+}
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -162,44 +229,6 @@ function audioPath(audioName) {
 
 function isObsolete(text) {
   return /\(Obsolete\)/i.test(String(text || ''));
-}
-
-// ---------- Audio (race-safe) ----------
-
-function stopAudio() {
-  if (currentAudio) {
-    currentAudio._aborted = true;            // mark to suppress error toast from teardown
-    try { currentAudio.pause(); } catch (_) {}
-    currentAudio = null;
-  }
-  $$('.audio-play.playing, .audio-only-btn.playing, .preview-btn.playing')
-    .forEach(el => el.classList.remove('playing'));
-}
-
-function playAudio(audioName, button) {
-  if (!audioName) return;
-  stopAudio();
-  const audio = new Audio(audioPath(audioName));
-  currentAudio = audio;
-  audio._aborted = false;
-  if (button) button.classList.add('playing');
-
-  audio.addEventListener('ended', () => {
-    if (button) button.classList.remove('playing');
-    if (currentAudio === audio) currentAudio = null;
-  });
-
-  audio.addEventListener('error', () => {
-    if (button) button.classList.remove('playing');
-    if (audio._aborted) return;              // we paused it on purpose — stay silent
-    if (currentAudio === audio) currentAudio = null;
-    showToast(`Couldn't load audio "${audioName}.${AUDIO_EXTENSION}". Make sure the file is in the Sound folder.`);
-  });
-
-  audio.play().catch(() => {
-    // Autoplay can fail without a user gesture; ignore quietly.
-    if (button) button.classList.remove('playing');
-  });
 }
 
 // ---------- Toast ----------

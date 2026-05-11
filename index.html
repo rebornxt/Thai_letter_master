@@ -10,7 +10,11 @@
   <!-- Modern font option (loaded from Google Fonts CDN) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Standard font (Sarabun): primary source is local /Sarabun/, with Google
+       Fonts as a same-family fallback so glyphs the local files lack (notably
+       U+25CC, the dotted-circle vowel base) render in the same Sarabun design
+       rather than tofu or a different fallback font. -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css" />
 </head>
