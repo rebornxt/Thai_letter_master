@@ -5,48 +5,45 @@
    ============================================================ */
 
 /* ---------- Sarabun font faces ----------
-   Local files declared with explicit unicode-range so the browser falls through
-   to Google's Sarabun (loaded via <link> in index.html) for characters the local
-   files lack — notably U+25CC (dotted circle) used as the Thai vowel base.
-   Both sources are the same Sarabun design, so the per-glyph fallback is
-   visually seamless.
-   Range = Basic Latin + Latin-1 Supplement + Latin Extended-A + Latin Extended-B
-           + Thai (U+0E00-U+0E7F). */
+   Local files are declared under a SEPARATE family name ('SarabunLocal') so
+   per-glyph fallback to Google's Sarabun (a true 'Sarabun' via the <link> in
+   index.html) is reliable across all browsers. With identical family names,
+   when the local file lacks a glyph (notably U+25CC and several combining
+   marks), some browsers fall straight through to the next family in the stack
+   instead of trying other @font-face sources for the same family. Distinct
+   names sidestep that.
+
+   Stack: SarabunLocal (user-provided) → Sarabun (Google CDN, identical design,
+   full Thai coverage including dotted circle) → Noto Sans Thai → system. */
 @font-face {
-  font-family: 'Sarabun';
+  font-family: 'SarabunLocal';
   src: url('Sarabun/Sarabun-Light.ttf') format('truetype');
   font-weight: 300; font-style: normal; font-display: swap;
-  unicode-range: U+0020-024F, U+0E00-0E7F;
 }
 @font-face {
-  font-family: 'Sarabun';
+  font-family: 'SarabunLocal';
   src: url('Sarabun/Sarabun-Regular.ttf') format('truetype');
   font-weight: 400; font-style: normal; font-display: swap;
-  unicode-range: U+0020-024F, U+0E00-0E7F;
 }
 @font-face {
-  font-family: 'Sarabun';
+  font-family: 'SarabunLocal';
   src: url('Sarabun/Sarabun-Medium.ttf') format('truetype');
   font-weight: 500; font-style: normal; font-display: swap;
-  unicode-range: U+0020-024F, U+0E00-0E7F;
 }
 @font-face {
-  font-family: 'Sarabun';
+  font-family: 'SarabunLocal';
   src: url('Sarabun/Sarabun-SemiBold.ttf') format('truetype');
   font-weight: 600; font-style: normal; font-display: swap;
-  unicode-range: U+0020-024F, U+0E00-0E7F;
 }
 @font-face {
-  font-family: 'Sarabun';
+  font-family: 'SarabunLocal';
   src: url('Sarabun/Sarabun-Bold.ttf') format('truetype');
   font-weight: 700; font-style: normal; font-display: swap;
-  unicode-range: U+0020-024F, U+0E00-0E7F;
 }
 @font-face {
-  font-family: 'Sarabun';
+  font-family: 'SarabunLocal';
   src: url('Sarabun/Sarabun-ExtraBold.ttf') format('truetype');
   font-weight: 800; font-style: normal; font-display: swap;
-  unicode-range: U+0020-024F, U+0E00-0E7F;
 }
 
 /* ---------- Design tokens ---------- */
@@ -110,7 +107,7 @@ img, svg { display: block; max-width: 100%; }
 /* ---------- Base ---------- */
 html { -webkit-text-size-adjust: 100%; }
 body {
-  font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi',
+  font-family: 'SarabunLocal', 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi',
                'Tahoma', system-ui, -apple-system, sans-serif;
   font-weight: 400;
   font-size: 16px;
@@ -1109,11 +1106,11 @@ body::before {
    sara-i, etc.) and the dotted-circle placeholder always have a covering glyph
    on every device, including older Android webviews and in-app browsers. */
 body.font-sarabun {
-  font-family: 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi',
+  font-family: 'SarabunLocal', 'Sarabun', 'Noto Sans Thai', 'Leelawadee UI', 'Thonburi',
                'Tahoma', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 body.font-noto {
-  font-family: 'Noto Sans Thai', 'Sarabun', 'Leelawadee UI', 'Thonburi',
+  font-family: 'Noto Sans Thai', 'SarabunLocal', 'Sarabun', 'Leelawadee UI', 'Thonburi',
                'Tahoma', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 body.font-noto .brand-mark,
@@ -1122,7 +1119,7 @@ body.font-noto .hero-watermark,
 body.font-noto .card-thai,
 body.font-noto .brand-tag,
 body.font-noto .page-thai {
-  font-family: 'Noto Sans Thai', 'Sarabun', 'Leelawadee UI', 'Thonburi',
+  font-family: 'Noto Sans Thai', 'SarabunLocal', 'Sarabun', 'Leelawadee UI', 'Thonburi',
                'Tahoma', system-ui, sans-serif;
 }
 
@@ -1304,10 +1301,10 @@ body.quiz-active .timer-toggle {
   letter-spacing: 0.04em;
 }
 .font-option[data-font="sarabun"] .font-option-preview {
-  font-family: 'Sarabun', 'Noto Sans Thai', 'Tahoma', system-ui, sans-serif;
+  font-family: 'SarabunLocal', 'Sarabun', 'Noto Sans Thai', 'Tahoma', system-ui, sans-serif;
 }
 .font-option[data-font="noto"] .font-option-preview {
-  font-family: 'Noto Sans Thai', 'Sarabun', 'Tahoma', system-ui, sans-serif;
+  font-family: 'Noto Sans Thai', 'SarabunLocal', 'Sarabun', 'Tahoma', system-ui, sans-serif;
 }
 @media (max-width: 560px) {
   .font-options { grid-template-columns: 1fr; }
@@ -1805,11 +1802,11 @@ body.quiz-active .timer-toggle {
   font-size: 16px;
   font-weight: 500;
   color: var(--text-muted);
-  font-family: 'Sarabun', 'Noto Sans Thai', 'Tahoma', system-ui, sans-serif;
+  font-family: 'SarabunLocal', 'Sarabun', 'Noto Sans Thai', 'Tahoma', system-ui, sans-serif;
   text-align: center;
 }
 body.font-noto .choice.choice-audio-only .reveal-name {
-  font-family: 'Noto Sans Thai', 'Sarabun', 'Tahoma', system-ui, sans-serif;
+  font-family: 'Noto Sans Thai', 'SarabunLocal', 'Sarabun', 'Tahoma', system-ui, sans-serif;
 }
 .choice.choice-audio-only.locked .reveal-name {
   display: block;

@@ -1,5 +1,5 @@
 /* ============================================================
-   app.js — Thai Letter Master  (v1.3.2)
+   app.js — Thai Letter Master  (v1.1)
    Single-file SPA. State machine + render loop.
    ============================================================ */
 
@@ -8,7 +8,7 @@
 // If your audio files use a different format, change this (mp3 / ogg / wav / m4a).
 const AUDIO_EXTENSION = 'mp3';
 const AUDIO_FOLDER    = 'Sound/';
-const APP_VERSION     = '1.3.2';
+const APP_VERSION     = '1.1';
 const STORAGE_KEY     = 'thai-letter-master:state:v1';
 const SETTINGS_KEY    = 'thai-letter-master:settings:v1';
 const MAX_CUSTOM      = 99;
