@@ -1,4 +1,4 @@
-# Thai Letter Master  (v1.3.3)
+# Thai Letter Master  (v2.0)
 
 A friendly drill app for memorising the Thai alphabet — built for Om's italki students.
 Three practice modes (Listen / See / Match Description) covering 83 consonants and vowels,
@@ -56,6 +56,34 @@ The `Sound/` and `Sarabun/` folders just need to be in the same folder as
 `index.html`. Make sure they aren't gitignored.
 
 ---
+
+## What's in v2.0
+
+Major release — vowel data is now classified across two dimensions:
+
+- **Structure** — every vowel belongs to one of three groups:
+  - **Simple Vowels** (`สระเดี่ยว`) — single-sound vowels (24 entries)
+  - **Compound Vowels** (`สระประสม`) — diphthongs (7 entries)
+  - **Special Vowels** (`สระเกิน`) — extras including ฤ, ฤๅ, ฦ, ฦๅ and the
+    composite forms ำ / ไ / ใ / เา (8 entries)
+- **Length** — derived from the description text:
+  - **Short Vowels** (22 entries)
+  - **Long Vowels** (17 entries)
+
+These appear as six category cards under every mode (alongside the existing
+five consonant cards), so the category page now lists 12 buckets for
+Listen / See modes and 8 for Description mode.
+
+The filtering engine also supports any structure × length combination via
+composite ids of the form `vowels-<structure>-<length>` (e.g.
+`vowels-compound-long`). These aren't shown as cards by default but quizzes
+built against them work end-to-end — including All mode, Endless, and
+question counts.
+
+When a category is too small to supply 3 unique distractors (e.g. only 4
+entries in `vowels-compound-long`), distractors are topped up from the rest
+of the alphabet, biased toward the same family (vowel ↔ vowel), so every
+question still presents 4 distinct choices.
 
 ## What's in v1.1
 

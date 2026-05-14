@@ -1,5 +1,5 @@
 /* ============================================================
-   app.js — Thai Letter Master  (v1.3.3)
+   app.js — Thai Letter Master  (v2.0)
    Single-file SPA. State machine + render loop.
    ============================================================ */
 
@@ -8,7 +8,7 @@
 // If your audio files use a different format, change this (mp3 / ogg / wav / m4a).
 const AUDIO_EXTENSION = 'mp3';
 const AUDIO_FOLDER    = 'Sound/';
-const APP_VERSION     = '1.3.3';
+const APP_VERSION     = '2.0';
 const STORAGE_KEY     = 'thai-letter-master:state:v1';
 const SETTINGS_KEY    = 'thai-letter-master:settings:v1';
 const MAX_CUSTOM      = 99;
@@ -31,20 +31,38 @@ const TOPICS = [
   },
 ];
 
+// Consonant category list — unchanged from v1.x.
 const CONSONANT_CATEGORIES = [
-  { id: 'middle',          title: 'Middle Consonants',     subtitle: 'อักษรกลาง' },
-  { id: 'high',            title: 'High Consonants',       subtitle: 'อักษรสูง' },
-  { id: 'lowPair',         title: 'Low Consonants (Pair)', subtitle: 'อักษรต่ำคู่' },
+  { id: 'middle',          title: 'Middle Consonants',       subtitle: 'อักษรกลาง' },
+  { id: 'high',            title: 'High Consonants',         subtitle: 'อักษรสูง' },
+  { id: 'lowPair',         title: 'Low Consonants (Pair)',   subtitle: 'อักษรต่ำคู่' },
   { id: 'lowSingle',       title: 'Low Consonants (Single)', subtitle: 'อักษรต่ำเดี่ยว' },
   { id: 'mixedConsonants', title: 'Mixed 3 Consonant Groups', subtitle: '3 กลุ่มรวม' },
-  { id: 'vowels',          title: 'Vowels',                subtitle: 'สระ' },
-  { id: 'all',             title: 'Mixed Consonants + Vowels', subtitle: 'พยัญชนะ + สระ' },
 ];
 
+// v2.0 — Vowel category list. Three structural cards + two length cards +
+// one "All Vowels" umbrella. The system internally supports any structural
+// × length combo (e.g. category id "vowels-compound-long") for callers that
+// want it; see getEntriesForCategory in data.js.
+const VOWEL_CATEGORIES = [
+  { id: 'vowels',        title: 'All Vowels',     subtitle: 'สระทั้งหมด' },
+  { id: 'simpleVowel',   title: 'Simple Vowels',   subtitle: 'สระเดี่ยว' },
+  { id: 'compoundVowel', title: 'Compound Vowels', subtitle: 'สระประสม' },
+  { id: 'specialVowel',  title: 'Special Vowels',  subtitle: 'สระเกิน' },
+  { id: 'shortVowel',    title: 'Short Vowels',    subtitle: 'สระเสียงสั้น' },
+  { id: 'longVowel',     title: 'Long Vowels',     subtitle: 'สระเสียงยาว' },
+];
+
+const MIXED_CATEGORY = { id: 'all', title: 'Mixed Consonants + Vowels', subtitle: 'พยัญชนะ + สระ' };
+
+// Combined list shown to listen/see modes (consonants + vowel breakdown + everything)
+const ALPHABET_CATEGORIES = [...CONSONANT_CATEGORIES, ...VOWEL_CATEGORIES, MIXED_CATEGORY];
+
+// Description mode keeps a smaller surface — consonants as one mixed bucket, plus the vowel breakdown
 const DESCRIPTION_CATEGORIES = [
   { id: 'mixedConsonants', title: 'Mixed 3 Consonant Groups', subtitle: '3 กลุ่มรวม' },
-  { id: 'vowels',          title: 'Vowels',                subtitle: 'สระ' },
-  { id: 'all',             title: 'Mixed Consonants + Vowels', subtitle: 'พยัญชนะ + สระ' },
+  ...VOWEL_CATEGORIES,
+  MIXED_CATEGORY,
 ];
 
 const MODES = [
@@ -54,7 +72,7 @@ const MODES = [
     subtitle: 'ฟังและเลือกตัวอักษร',
     description: 'Hear a sound, then pick the letter that matches.',
     icon: 'ear',
-    categories: CONSONANT_CATEGORIES,
+    categories: ALPHABET_CATEGORIES,
   },
   {
     id: 'see',
@@ -62,7 +80,7 @@ const MODES = [
     subtitle: 'ดูตัวอักษรและเลือกเสียง',
     description: 'Look at a Thai letter, then choose its correct sound.',
     icon: 'eye',
-    categories: CONSONANT_CATEGORIES,
+    categories: ALPHABET_CATEGORIES,
   },
   {
     id: 'description',
@@ -253,10 +271,47 @@ function showToast(msg, variant) {
 // ---------- Question building ----------
 
 // Build one question for the given mode using a specific correct entry, drawing distractors from `pool`.
+// Distractor top-up: when the in-category pool can't supply 3 unique distractors
+// (e.g. a tiny combo filter like "vowels-compound-long" with only 4 entries),
+// borrow from the entire alphabet to keep every question a 4-choice question.
+// We bias the top-up toward entries of the SAME structural family (vowels for
+// vowel correct, consonants for consonant correct) so the distractors still
+// feel related.
+function topUpDistractors(distractorPool, correct, keyOf, n) {
+  let picked = pickRandom(distractorPool, n);
+  if (picked.length >= n) return picked;
+
+  const correctKey = keyOf(correct);
+  const pickedKeys = new Set(picked.map(keyOf));
+  pickedKeys.add(correctKey);
+
+  // First-pass top-up from same family (vowel ↔ vowel, consonant ↔ consonant)
+  const sameFamily = ALPHABET_DATA.filter(e =>
+    !pickedKeys.has(keyOf(e)) &&
+    (isVowelEntry(correct) ? isVowelEntry(e) : isConsonantEntry(e))
+  );
+  for (const e of shuffle(sameFamily)) {
+    if (picked.length >= n) break;
+    picked.push(e);
+    pickedKeys.add(keyOf(e));
+  }
+
+  // Last resort: top up from anywhere else
+  if (picked.length < n) {
+    const rest = ALPHABET_DATA.filter(e => !pickedKeys.has(keyOf(e)));
+    for (const e of shuffle(rest)) {
+      if (picked.length >= n) break;
+      picked.push(e);
+      pickedKeys.add(keyOf(e));
+    }
+  }
+  return picked;
+}
+
 function buildQuestionFromCorrect(modeId, pool, correct) {
   if (modeId === 'listen') {
-    const distractorPool = pool.filter(e => e.audio !== correct.audio);
-    const distractors = pickRandom(distractorPool, 3);
+    const inPool = pool.filter(e => e.audio !== correct.audio);
+    const distractors = topUpDistractors(inPool, correct, e => e.audio, 3);
     const choices = shuffle([correct, ...distractors]).map(c => ({
       kind: 'letter',
       letter: c.letter,
@@ -266,11 +321,33 @@ function buildQuestionFromCorrect(modeId, pool, correct) {
   }
 
   if (modeId === 'see') {
-    // Choices are anonymous play buttons (audio names). Distractors must have unique audio names != correct's.
+    // Choices are anonymous play buttons (audio names). Distractor audios must be different from correct's.
     const uniqueAudios = [...new Set(pool.map(e => e.audio))];
-    const distractorAudios = uniqueAudios.filter(a => a !== correct.audio);
-    const distractors = pickRandom(distractorAudios, 3);
-    const allAudios = shuffle([correct.audio, ...distractors]);
+    const inPoolAudios = uniqueAudios.filter(a => a !== correct.audio);
+    let distractorAudios = pickRandom(inPoolAudios, 3);
+    if (distractorAudios.length < 3) {
+      // Top up from full alphabet, biased toward same family (vowel ↔ vowel).
+      // Re-check `seen` inside the loop because the same-family pool may contain
+      // multiple entries with the same audio (e.g. "อะ" via both ◌ะ and ◌ั).
+      const seen = new Set([correct.audio, ...distractorAudios]);
+      const sameFamily = ALPHABET_DATA
+        .filter(e => isVowelEntry(correct) ? isVowelEntry(e) : isConsonantEntry(e));
+      for (const e of shuffle(sameFamily)) {
+        if (distractorAudios.length >= 3) break;
+        if (seen.has(e.audio)) continue;
+        distractorAudios.push(e.audio);
+        seen.add(e.audio);
+      }
+      if (distractorAudios.length < 3) {
+        for (const e of shuffle(ALPHABET_DATA)) {
+          if (distractorAudios.length >= 3) break;
+          if (seen.has(e.audio)) continue;
+          distractorAudios.push(e.audio);
+          seen.add(e.audio);
+        }
+      }
+    }
+    const allAudios = shuffle([correct.audio, ...distractorAudios]);
     const choices = allAudios.map(a => ({
       kind: 'sound',
       audio: a,
@@ -278,11 +355,9 @@ function buildQuestionFromCorrect(modeId, pool, correct) {
       isCorrect: a === correct.audio,
     }));
     return { mode: 'see', correct, choices, questionLetter: correct.letter };
-  }
-
-  if (modeId === 'description') {
-    const distractorPool = pool.filter(e => e.description !== correct.description);
-    const distractors = pickRandom(distractorPool, 3);
+  }  if (modeId === 'description') {
+    const inPool = pool.filter(e => e.description !== correct.description);
+    const distractors = topUpDistractors(inPool, correct, e => e.description, 3);
     const choices = shuffle([correct, ...distractors]).map(c => ({
       kind: 'letter',
       letter: c.letter,
