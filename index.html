@@ -10,11 +10,26 @@
   <!-- Modern font option (loaded from Google Fonts CDN) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <!-- Standard font (Sarabun): primary source is local /Sarabun/, with Google
        Fonts as a same-family fallback so glyphs the local files lack (notably
        U+25CC, the dotted-circle vowel base) render in the same Sarabun design
        rather than tofu or a different fallback font. -->
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Google Fonts' standard "thai" subset (U+0E00..U+0E7F) does NOT include
+       U+25CC (dotted circle), because that codepoint lives in the Geometric
+       Shapes block. Without it in the *same* family that supplies Thai
+       combining marks, the browser ends up shaping a vowel cluster like ◌ิ
+       in Noto Sans Thai (the first family that has BOTH characters), even
+       when Sarabun is selected and has the mark.
+
+       Solution: ask Google Fonts to serve a tiny additional subset of
+       Sarabun (and Noto Sans Thai) containing only U+25CC, via &text=◌. The
+       resulting @font-face is registered under the same family name with a
+       single-codepoint unicode-range, so the browser knows the dotted circle
+       is available in that family. Cluster shapes consistently in one font. -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&text=%E2%97%8C&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -59,7 +74,7 @@
       <span class="footer-mark" aria-hidden="true">◆</span>
       <span>Crafted with care for Thai language learners</span>
       <span class="footer-mark" aria-hidden="true">◆</span>
-      <span class="footer-version">v2.0</span>
+      <span class="footer-version">v2.0.1</span>
     </div>
   </footer>
 
